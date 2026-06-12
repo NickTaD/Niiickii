@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Feliz Dia dos Namorados 💕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0510 0%, #1a0a1a 50%, #150510 100%);
+            font-family: 'Georgia', 'Times New Roman', serif;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        #canvas3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #app {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .carta-container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 182, 193, 0.25);
+            border-radius: 16px;
+            padding: 30px 24px;
+            box-shadow: 
+                0 8px 32px rgba(255, 105, 180, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            animation: float 4s ease-in-out infinite;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        
+        .carta-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.9) translateY(20px);
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        .botao-fechar {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 105, 180, 0.15);
+            border: 1px solid rgba(255, 182, 193, 0.3);
+            color: #ffb6c1;
+            font-size: 1.2rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .botao-fechar:hover, .botao-fechar:active {
+            background: rgba(255, 105, 180, 0.35);
+            transform: scale(1.1);
+        }
+        
+        .carta-container h1 {
+            text-align: center;
+            color: #ff7eb3;
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            text-shadow: 0 0 15px rgba(255, 105, 180, 0.4);
+            font-style: italic;
+            padding-right: 30px;
+        }
+        
+        .carta-container .data {
+            text-align: center;
+            color: rgba(255, 182, 193, 0.5);
+            font-size: 0.75rem;
+            margin-bottom: 20px;
+            letter-spacing: 1.5px;
+        }
+        
+        .carta-texto {
+            color: #ffd4e0;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            text-align: left;
+            max-height: 45vh;
+            overflow-y: auto;
+        }
+        
+        .carta-texto::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .carta-texto::-webkit-scrollbar-track {
+            background: rgba(255, 182, 193, 0.1);
+        }
+        
+        .carta-texto::-webkit-scrollbar-thumb {
+            background: rgba(255, 105, 180, 0.4);
+            border-radius: 2px;
+        }
+        
+        .carta-texto p {
+            margin-bottom: 16px;
+        }
+        
+        .carta-texto .destaque {
+            color: #ff8fab;
+            font-weight: bold;
+        }
+        
+        .assinatura {
+            margin-top: 24px;
+            text-align: right;
+            color: #ffb6c1;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+        
+        .assinatura .coracao {
+            font-size: 1.3rem;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+        
+        .btn {
+            background: rgba(255, 105, 180, 0.18);
+            border: 1px solid rgba(255, 182, 193, 0.35);
+            color: #ffcad4;
+            padding: 12px 28px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+        }
+        
+        .btn:hover, .btn:active {
+            background: rgba(255, 105, 180, 0.35);
+            box-shadow: 0 0 25px rgba(255, 105, 180, 0.35);
+            transform: scale(1.05);
+        }
+        
+        @media (max-width: 480px) {
+            #app { padding: 15px; }
+            .carta-container { padding: 24px 18px; border-radius: 14px; }
+            .carta-container h1 { font-size: 1.4rem; }
+            .carta-texto { font-size: 0.9rem; line-height: 1.6; }
+            .controls { bottom: 20px; }
+            .btn { padding: 10px 22px; font-size: 0.85rem; }
+        }
+        
+        @media (max-width: 360px) {
+            .carta-container { padding: 20px 14px; border-radius: 12px; }
+            .carta-container h1 { font-size: 1.25rem; padding-right: 25px; }
+            .carta-container .data { font-size: 0.7rem; }
+            .carta-texto { font-size: 0.85rem; }
+            .btn { padding: 10px 18px; font-size: 0.8rem; }
+        }
+        
+        @media (max-height: 500px) and (orientation: landscape) {
+            .carta-container { max-height: 85vh; overflow-y: auto; }
+            .carta-container h1 { font-size: 1.2rem; }
+            .carta-texto { font-size: 0.85rem; }
+            .controls { bottom: 15px; }
+        }
+        
+        @media (min-width: 600px) {
+            .carta-container { padding: 40px 35px; max-width: 550px; }
+            .carta-container h1 { font-size: 1.8rem; }
+            .carta-texto { font-size: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas3d"></canvas>
+    
+    <div id="app">
+        <div class="carta-container" id="carta">
+            <button class="botao-fechar" onclick="esconderCarta()">✕</button>
+            
+            <h1>💌 Para Você, Meu Amor</h1>
+            <div class="data">12 de Junho de 2026</div>
+            
+            <div class="carta-texto">
+                <p>Oiii minha vidinha</p>
+                
+                <p>Sabia quando penso em tudo o que vivemos juntos, percebo que o universo foi incrivelmente generoso comigo ao te colocar ao meu lado. Você é o melhor presente que a vida poderia me dar.</p>
+                
+                <p>Cada momento ao seu lado é um tesouro que guardo no coração. Seu sorriso ilumina meus dias, sua risada é musicas para meu ouvido,você é o meu lar</p>
+                
+                <p>Neste Dia dos Namorados, quero que você saiba que: <span class="destaque">EU TE AMO MUITOOO❤️🥰</span>. Não só hoje, mas todos os dias, em todos os momentos, de todas as formas possíveis.</p>
+                
+                <p>Obrigado por ser você. Obrigado por me amar. Obrigado por escolher caminhar ao meu lado. Obrigado por me proporcionar isso.</p>
+                
+                <p>Que nossa história seja longa e sem fim, feliz e cheia de amor. 💕</p>
+            </div>
+            
+            <div class="assinatura">
+                Com todo o meu amor,<br>
+                <span class="coracao">❤️</span> seu princeso🥰
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="mostrarCarta()">💌 Carta</button>
+            <button class="btn" onclick="esconderCarta()">✕ Fechar</button>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Funções para mostrar/ocultar a carta
+        function mostrarCarta() {
+            document.getElementById('carta').classList.remove('hidden');
+        }
+        
+        function esconderCarta() {
+            document.getElementById('carta').classList.add('hidden');
+        }
+        
+        // Cores românticas
+        const colorChoices = [
+            '#ff1744', '#ff4081', '#f50057', '#ff80ab', 
+            '#ff5252', '#c51162', '#ff597e', '#ff9999'
+        ];
+ 
+        // Detectar dispositivo
+        const isMobile = window.innerWidth < 768;
+        const count = isMobile ? 150 : 300;
+        
+        // Arrays
+        const randoms = new Float32Array(count);
+        const randoms1 = new Float32Array(count);
+        const scales = new Float32Array(count);
+        const colors = new Float32Array(count * 3);
+        const speeds = new Float32Array(count);
+ 
+        // Three.js setup
+        const canvas = document.getElementById('canvas3d');
+        const scene = new THREE.Scene();
+        
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = isMobile ? 60 : 50;
+ 
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas: canvas, 
+            alpha: true, 
+            antialias: true 
+        });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor(0x000000, 0);
+ 
+        const parameters = { max: 2.0 };
+ 
+        // Textura coração
+        function createHeartTexture() {
+            const size = 64;
+            const c = document.createElement('canvas');
+            c.width = size;
+            c.height = size;
+            const ctx = c.getContext('2d');
+            ctx.clearRect(0, 0, size, size);
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(size/2, size/3);
+            ctx.bezierCurveTo(size/2, size/4, size*0.4, size*0.15, size*0.25, size*0.15);
+            ctx.bezierCurveTo(size*0.1, size*0.15, size*0.1, size*0.4, size*0.1, size*0.4);
+            ctx.bezierCurveTo(size*0.1, size*0.65, size*0.4, size*0.8, size/2, size*0.95);
+            ctx.bezierCurveTo(size*0.6, size*0.8, size*0.9, size*0.65, size*0.9, size*0.4);
+            ctx.bezierCurveTo(size*0.9, size*0.4, size*0.9, size*0.15, size*0.75, size*0.15);
+            ctx.bezierCurveTo(size*0.6, size*0.15, size/2, size/3, size/2, size/3);
+            ctx.fill();
+            
+            return new THREE.CanvasTexture(c);
+        }
+ 
+        // Inicializar valores
+        for (let i = 0; i < count; i++) {
+            const i3 = 3 * i;
+ 
+            randoms[i] = Math.random();
+            randoms1[i] = Math.random();
+            scales[i] = Math.random() * 2.0 + 1.2;
+ 
+            const colorIndex = Math.floor(Math.random() * colorChoices.length);
+            const color = new THREE.Color(colorChoices[colorIndex]);
+ 
+            colors[i3 + 0] = color.r;
+            colors[i3 + 1] = color.g;
+            colors[i3 + 2] = color.b;
+            
+            speeds[i] = Math.random() * parameters.max;
+        }
+ 
+        // Geometry
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('size', new THREE.BufferAttribute(scales, 1));
+        geometry.setAttribute('random', new THREE.BufferAttribute(randoms, 1));
+        geometry.setAttribute('random1', new THREE.BufferAttribute(randoms1, 1));
+        geometry.setAttribute('speed', new THREE.BufferAttribute(speeds, 1));
+ 
+        // Material
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                pointTexture: { value: createHeartTexture() }
+            },
+            vertexShader: `
+                attribute float size;
+                attribute float random;
+                attribute float random1;
+                varying vec3 vColor;
+                varying float vAlpha;
+                
+                void main() {
+                    vColor = color;
+                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                    gl_PointSize = size * (250.0 / -mvPosition.z);
+                    gl_Position = projectionMatrix * mvPosition;
+                    vAlpha = 0.4 + 0.6 * random1;
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D pointTexture;
+                varying vec3 vColor;
+                varying float vAlpha;
+                
+                void main() {
+                    vec4 texColor = texture2D(pointTexture, gl_PointCoord);
+                    gl_FragColor = vec4(vColor, texColor.a * vAlpha * 0.85);
+                }
+            `,
+            transparent: true,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+ 
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+ 
+        // Posições iniciais - distribuir por toda a tela
+        const positions = geometry.attributes.position.array;
+        const limitY = isMobile ? 35 : 45;
+        const limitX = isMobile ? 45 : 60;
+ 
+        for (let i = 0; i < count; i++) {
+            positions[i * 3 + 0] = (Math.random() - 0.5) * limitX * 2;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * limitY * 2;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 30;
+        }
+        geometry.attributes.position.needsUpdate = true;
+ 
+        // ========== ANIMAÇÃO: CORAÇÕES CAINDO ==========
+        let time = 0;
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+ 
+            const pos = geometry.attributes.position.array;
+            const speedsArr = geometry.attributes.speed.array;
+            const randomsArr = geometry.attributes.random.array;
+            const randoms1Arr = geometry.attributes.random1.array;
+ 
+            for (let i = 0; i < count; i++) {
+                const i3 = i * 3;
+                
+                // Queda dos corações (velocidade variando)
+                pos[i3 + 1] -= speedsArr[i] * 0.2 + 0.05;
+                
+                // Movimento lateral (oscilação suave)
+                pos[i3] += Math.sin(time * 2 + randoms1Arr[i] * 10) * 0.03;
+                
+                // Leve movimento Z
+                pos[i3 + 2] += Math.cos(time + randomsArr[i] * 10) * 0.01;
+ 
+                // Reset quando chega no fundo
+                if (pos[i3 + 1] < -limitY) {
+                    pos[i3 + 1] = limitY;
+                    pos[i3] = (Math.random() - 0.5) * limitX * 2;
+                    pos[i3 + 2] = (Math.random() - 0.5) * 30;
+                }
+ 
+                // Wrap horizontal
+                if (pos[i3] > limitX) pos[i3] = -limitX;
+                if (pos[i3] < -limitX) pos[i3] = limitX;
+            }
+ 
+            geometry.attributes.position.needsUpdate = true;
+            renderer.render(scene, camera);
+        }
+ 
+        animate();
+ 
+        // Ajustar ao redimensionar a janela
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
